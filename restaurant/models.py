@@ -1,8 +1,4 @@
-from datetime import datetime
-
 from django.db import models
-# from datetime import datetime, timedelta
-# default=datetime.now().time() + timedelta(hours=3)
 from phonenumber_field.modelfields import PhoneNumberField
 
 from users.models import User
@@ -33,7 +29,7 @@ class Table(models.Model):
     objects = models.Manager()
 
     number = models.IntegerField(verbose_name="Номер стола")
-    capacity = models.IntegerField(verbose_name="Количество человек на стол")
+    seats = models.IntegerField(verbose_name="Количество человек на стол")
     is_booked = models.BooleanField(verbose_name="Забронирован", default=False)
     restaurant = models.ForeignKey(Restaurant,
                                    on_delete=models.CASCADE,
@@ -65,7 +61,8 @@ class Booking(models.Model):
                                **NULLABLE)
     date_reserved = models.DateField(verbose_name="Дата бронирования")
     time_reserved = models.TimeField(verbose_name="Время бронирования")
-    duration = models.PositiveIntegerField(verbose_name="Продолжительность бронирования", default=3)  # в часах
+    duration = models.PositiveIntegerField(verbose_name="Продолжительность бронирования", default=3)
+    message = models.TextField(verbose_name="Сообщение", **NULLABLE)
     is_active = models.BooleanField(verbose_name="Активно", default=True)
 
     class Meta:
@@ -74,13 +71,3 @@ class Booking(models.Model):
 
     def __str__(self):
         return f'Бронирование стола {self.table.number} на {self.date_reserved} в {self.time_reserved}'
-
-    @property
-    def end_time(self):
-        """
-        Возвращает время окончания бронирования на основе времени начала и продолжительности.
-        """
-        start_datetime = datetime.combine(self.date_reserved, self.time_reserved)
-        end_datetime = start_datetime + self.duration
-        return end_datetime.time()  # Возвращаем только время
-

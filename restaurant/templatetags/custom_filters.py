@@ -1,7 +1,6 @@
 from datetime import datetime, date, time
 
 from django import template
-from restaurant.models import Restaurant, Table
 from django.utils.translation import gettext as _
 
 register = template.Library()

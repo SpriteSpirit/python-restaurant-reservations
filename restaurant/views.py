@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.views.generic import CreateView
 
-from restaurant.choose_table_form import BookingForm
+from restaurant.forms import ChooseTableForm
 from restaurant.models import Table, Booking
 
 
@@ -20,13 +20,13 @@ def index(request):
     table_statuses = []
 
     if request.method == "POST":
-        form = BookingForm(request.POST)
+        form = ChooseTableForm(request.POST)
         if form.is_valid():
             selected_date = form.cleaned_data['date_reserved']
             # Получаем все бронирования на выбранную дату
             bookings = Booking.objects.filter(date_reserved=selected_date)
     else:
-        form = BookingForm()
+        form = ChooseTableForm()
 
     booked_table_ids = [booking.table.id for booking in bookings]
 
@@ -74,9 +74,8 @@ class BookingCreateView(CreateView):
     View для создания бронирования.
     """
     model = Booking
-    form_class = BookingForm
+    form_class = ChooseTableForm
     template_name = 'restaurant/booking_form.html'
-    fields = ['table', 'date_reserved', 'time_reserved']
     success_url = '/'
 
     def form_valid(self, form):
