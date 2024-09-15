@@ -16,7 +16,7 @@
         <div class="d-flex justify-content-center">
             <form method="post" class="mb-5" style="max-width: 500px;">
                 {% csrf_token %}
-                 {{ form.as_p }}
+                {{ form.as_p }}
                 <div class="form-group mb-3">
                     {{ form.booking_date.label_tag }}
                     {{ form.booking_date }}
@@ -26,7 +26,8 @@
         </div>
         <!-- Таблица состояния столов -->
         {% if selected_date %}
-        <h3 class="mt-5">Список столов на {{ selected_date|translate_date }}</h3> <hr>
+        <h3 class="mt-5">Список столов на {{ selected_date|translate_date }}</h3>
+        <hr>
         <table class="table table-dark table-striped table-hover align-middle">
             <thead>
             <tr>
@@ -59,9 +60,11 @@
                         Недоступен
                     </a>
                     {% else %}
-                        <a class="btn btn-light" href="{% url 'restaurant:booking_create' %}" role="button" style="width: 140px">
-                            Забронировать
-                       </a>
+                    <a class="btn btn-light"
+                       href="{% url 'restaurant:booking_create' table_id=table.number date_reserved=selected_date time_reserved=selected_time %}"
+                       role="button" style="width: 140px">
+                        Забронировать
+                    </a>
                     {% endif %}
                 </td>
             </tr>

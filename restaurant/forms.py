@@ -44,4 +44,24 @@ class ChooseTableForm(StyleFormMixin, forms.ModelForm):
 
     class Meta:
         model = Booking
-        fields = ['date_reserved']
+        fields = ['date_reserved', 'time_reserved']
+
+
+class BookingForm(StyleFormMixin, forms.ModelForm):
+    seats = forms.IntegerField(label='Количество мест', widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['seats'].initial = self.instance.table.seats
+
+    class Meta:
+        model = Booking
+        fields = ['date_reserved', 'time_reserved', 'table', 'seats', 'client', 'message']
+        widgets = {
+            'client': forms.TextInput(attrs={'placeholder': 'Имя и фамилия', 'readonly': 'readonly'}),
+            'message': forms.Textarea(attrs={'placeholder': 'Дополнительная информация'}),
+            'table': forms.TextInput(attrs={'placeholder': 'Стол', 'readonly': 'readonly'}),
+            'date_reserved': forms.TextInput(attrs={'placeholder': 'Дата бронирования', 'readonly': 'readonly'}),
+            'time_reserved': forms.TextInput(attrs={'placeholder': 'Время бронирования', 'readonly': 'readonly'}),
+            }
