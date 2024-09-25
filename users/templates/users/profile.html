@@ -1,0 +1,111 @@
+{% extends 'restaurant/base.html' %}
+
+{% block content %}
+<div class="d-flex flex-column justify-content-center align-items-center"
+     style="min-height: 100vh; padding: 40px 0;">
+    <div class="row gutters-sm w-100" style="max-width: 1200px;">
+        <!-- Левая большая колонка с аватаром и кнопкой -->
+        <div class="col-md-4 mb-3 d-flex align-items-stretch">
+            <div class="card bg-dark text-white w-100">
+                <div class="card-body text-center my-4">
+                    <img src="/media/{{ user.avatar }}" alt="User Avatar"
+                         class="rounded-circle mb-3" width="150" height="150">
+
+                    <h4 class="my-4">{{ user.first_name }}</h4>
+                    <a href="#" class="btn btn-outline-warning btn-sm mt-2">Редактировать</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка с информацией -->
+        <div class="col-md-8">
+            <!-- Карточка с основной информацией (высота выравнивается по высоте левой колонки) -->
+            <div class="card mb-3 bg-dark text-white d-flex align-items-stretch">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Ф. И. О.</h6>
+                        </div>
+                        <div class="col-sm-9" style="color: #ccc">
+                            {{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Email</h6>
+                        </div>
+                        <div class="col-sm-9" style="color: #ccc">
+                            {{ user.email }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Телефон</h6>
+                        </div>
+                        <div class="col-sm-9" style="color: #ccc">
+                            {% if not user.phone_number %}
+                            Не указан
+                            {% else %}
+                            {{ user.phone_number }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Страна</h6>
+                        </div>
+                        <div class="col-sm-9" style="color: #ccc">
+                            {{ user.country.name }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Дополнительные карточки (две маленькие) -->
+            <div class="row gutters-sm">
+                <!-- О себе -->
+                <div class="col-sm-6 mb-3 d-flex align-items-stretch">
+                    <div class="card bg-dark text-white w-100">
+                        <div class="card-body">
+                            <h6 class="mb-3">О себе</h6>
+                            <p style="color: #ccc">
+                                {% if not user.about_message %}
+                                Нет описания
+                                {% else %}
+                                {{ user.about_message }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Новые клиенты -->
+                <div class="col-sm-6 mb-3 d-flex align-items-stretch">
+                    <div class="card bg-dark text-white w-100">
+                        <div class="card-body">
+                            <h6 class="mb-3">Брони</h6>
+                            {% if clients %}
+                            {% for client in clients|slice:"-3:" %}
+                            <div class="mb-2">
+                                <small>{{ client.name }}
+                                    <span class="text-primary">[{{ client.email }}]</span>
+                                </small>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="bg-secondary" style="width: 100%; height: 5px;"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <p style="color: #ccc">Нет бронирований</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

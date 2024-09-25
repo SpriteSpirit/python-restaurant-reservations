@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100vh; padding: 20px 0;">
- <div class="col-9">
+    <div class="col-9">
         <form method="post" class="d-flex justify-content-center">
             <div class="col-6">
                 <div class="card">
@@ -10,17 +10,18 @@
                         <h3 class="card-title">Вход</h3>
                     </div>
                     <div class="card-body">
-                    <form method="post" action="{% url 'users:register' %}">
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                        <button class="btn btn-success" type="submit">Регистрация</button>
-                    </form>
+                        <form method="post" action="{% url 'users:register' %}">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <button class="btn btn-success" type="submit">Регистрация</button>
+                        </form>
+                    </div>
+
+                    <div class="card-footer"></div>
+
                 </div>
-
-                <div class="card-footer"></div>
-
             </div>
-        </div>
+        </form>
     </div>
 </div>
 
