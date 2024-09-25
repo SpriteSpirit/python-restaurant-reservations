@@ -75,14 +75,13 @@
                         {% endif %}
                     </li>
                     <li>
-
                         {% if not user.is_authenticated %}
                         <a style="color: gold" href="{% url 'users:login' %}">Вход</a>
                         {% else %}
                         <form action="{% url 'users:logout' %}" method="post">
                             {% csrf_token %}
                             <button type="submit"
-                                    style="background: transparent; border: none; color: gold; font-size: 16px; text-decoration: none;">
+                                    style="background: transparent; border: none; color: gold; font-size: 14px; text-decoration: none;">
                                 Выход
                             </button>
                         </form>
