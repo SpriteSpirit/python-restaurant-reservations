@@ -69,10 +69,30 @@
                     <li><a href="#gallery">Галерея</a></li>
                     <li><a href="#about">О нас</a></li>
                     <li><a href="#contact">Контакты</a></li>
+                    <li>
+                        {% if user.is_authenticated %}
+                        <a href="#" style="color: gold">Личный кабинет</a>
+                        {% endif %}
+                    </li>
+                    <li>
+
+                        {% if not user.is_authenticated %}
+                        <a style="color: gold" href="{% url 'users:login' %}">Вход</a>
+                        {% else %}
+                        <form action="{% url 'users:logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    style="background: transparent; border: none; color: gold; font-size: 16px; text-decoration: none;">
+                                Выход
+                            </button>
+                        </form>
+                        {% endif %}
+                    </li>
+
                 </ul>
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-            </nav>
 
+            </nav>
             <a class="btn-book-a-table d-none d-xl-block" href="#book-a-table">Забронировать стол</a>
 
         </div>
@@ -83,9 +103,9 @@
 
 <main class="main">
     <div class="container w-100 mb-4 mt-5">
-            {% block content %}
-            <!-- Add content here -->
-            {% endblock %}
+        {% block content %}
+        <!-- Add content here -->
+        {% endblock %}
     </div>
 </main>
 
@@ -147,7 +167,8 @@
     </div>
 
     <div class="container copyright text-center mt-4">
-        <p>© <span>Copyright</span> <strong class="px-1 sitename">Черная жемчужина</strong> <span>Все права защищены</span>
+        <p>© <span>Copyright</span> <strong class="px-1 sitename">Черная жемчужина</strong>
+            <span>Все права защищены</span>
         </p>
         <div class="credits">
             <!-- All the links in the footer should remain intact. -->

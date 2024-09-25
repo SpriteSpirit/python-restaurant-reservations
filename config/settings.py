@@ -30,6 +30,11 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'users.User'
+LOGIN_URL = 'users:login'
+
+# User authentication settings
+LOGIN_REDIRECT_URL = "restaurant:index"
+LOGOUT_REDIRECT_URL = "restaurant:index"
 
 # Application definition
 
