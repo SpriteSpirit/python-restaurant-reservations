@@ -97,3 +97,12 @@ class ResetPasswordCompleteView(PasswordResetCompleteView):
         context = super().get_context_data(**kwargs)
         context["login_url"] = resolve_url(settings.LOGIN_URL)
         return context
+
+# TODO: Редактирование профиля пользователя
+# TODO: Главная страница
+# TODO: О ресторане
+# TODO: ЛК: просмотр истории бронирования
+# TODO: ЛК: управление текущими бронированиями (изменение, отмена)
+# TODO: Админка:Управление пользователями
+# TODO: Админка:Управление бронированиями
+# TODO: Управление контентом сайта (тексты, изображения и т.д.)
