@@ -17,7 +17,10 @@ class User(AbstractUser):
     phone = PhoneNumberField(default="+7", verbose_name="Номер телефона", **NULLABLE)
     country = CountryField(default="RU", verbose_name="Страна", blank_label="(select country)")
     about_me = models.TextField(verbose_name="О себе", **NULLABLE)
-    avatar = models.ImageField(upload_to='users/avatars', verbose_name="Фото", default='users/avatars/default.jpg', **NULLABLE)
+    avatar = models.ImageField(upload_to='users/avatars', verbose_name="Фото",
+                               default='users/avatars/default.jpg', **NULLABLE)
+
+    token = models.CharField(max_length=100, verbose_name='Token', **NULLABLE)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
