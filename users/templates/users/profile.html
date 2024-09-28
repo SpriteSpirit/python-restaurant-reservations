@@ -12,7 +12,7 @@
                          class="rounded-circle mb-3" width="150" height="150">
 
                     <h4 class="my-4">{{ user.first_name }}</h4>
-                    <a href="#" class="btn btn-outline-warning btn-sm mt-2">Редактировать</a>
+                    <a href="{% url 'users:update' user.pk %}" class="btn btn-outline-warning btn-sm mt-2">Редактировать</a>
                 </div>
             </div>
         </div>
@@ -45,10 +45,10 @@
                             <h6 class="mb-0">Телефон</h6>
                         </div>
                         <div class="col-sm-9" style="color: #ccc">
-                            {% if not user.phone_number %}
+                            {% if not user.phone or user.phone == '+7' %}
                             Не указан
                             {% else %}
-                            {{ user.phone_number }}
+                            {{ user.phone }}
                             {% endif %}
                         </div>
                     </div>
@@ -72,10 +72,10 @@
                         <div class="card-body">
                             <h6 class="mb-3">О себе</h6>
                             <p style="color: #ccc">
-                                {% if not user.about_message %}
+                                {% if not user.about_me %}
                                 Нет описания
                                 {% else %}
-                                {{ user.about_message }}
+                                {{ user.about_me }}
                                 {% endif %}
                             </p>
                         </div>

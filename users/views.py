@@ -7,13 +7,13 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.html import strip_tags
 from django.utils.http import urlsafe_base64_encode
-from django.views.generic import CreateView
+from django.views.generic import CreateView, UpdateView
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 
 from config import settings
 from config.settings import EMAIL_HOST_USER
-from users.forms import UserRegisterForm, CustomAuthenticationForm
+from users.forms import UserRegisterForm, CustomAuthenticationForm, UserProfileForm
 from users.models import User
 
 
@@ -44,38 +44,70 @@ class UserDetailView(LoginView):
     context_object_name = 'user'
 
 
+class UserUpdateView(UpdateView):
+    """
+    Редактирование информации пользователя
+    """
+    model = User
+    form_class = UserProfileForm
+    success_url = reverse_lazy('users:profile')
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def form_valid(self, form):
+        """
+        Валидация формы
+        """
+
+        if form.is_valid:
+            user = form.save(commit=True)
+            user.save()
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('users:profile', args=[self.kwargs.get('pk')])
+
+
 class ResetPasswordView(PasswordResetView):
     """
     Сброса пароля - переопределение класса PasswordResetView
     """
     template_name = 'users/password_reset.html'
-    email_template_name = 'users/password_reset_email.html'
     success_url = reverse_lazy('restaurant:index')
     form_class = PasswordResetForm
 
     def form_valid(self, form):
         email = form.cleaned_data['email']
-        user = User.objects.get(email=email)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Можно обработать случай, когда пользователь с таким email не найден
+            return super().form_valid(form)
 
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
 
-        subject = 'Восстановление и сброс пароля'
-        reset_link = self.request.build_absolute_uri(reverse('users:password_reset_confirm', args=[uid, token]))
+        reset_link = self.request.build_absolute_uri(
+            reverse('users:password_reset_confirm', args=[uid, token])
+        )
 
-        html_message = render_to_string('users/password_reset_email.html', {
+        subject = 'Восстановление и сброс пароля'
+        message = render_to_string('users/password_reset_email.html', {
             'user': user,
-            'uid': uid,
-            'token': token,
-            'site_name': 'MAILING SERVICE',
             'reset_link': reset_link,
         })
 
-        plain_message = strip_tags(html_message)
-        send_mail(subject, plain_message, from_email=EMAIL_HOST_USER, recipient_list=[user.email],
-                  html_message=html_message)
+        send_mail(
+            subject,
+            strip_tags(message),
+            EMAIL_HOST_USER,
+            [user.email],
+            html_message=message,
+        )
 
-        return redirect(reverse('users:password_reset_done'))
+        return super().form_valid(form)
 
 
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
@@ -84,6 +116,14 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     """
     template_name = 'users/password_reset_confirm.html'
     success_url = reverse_lazy('users:password_reset_complete')
+
+    def form_valid(self, form):
+        print("Форма валидна")  # Добавьте эту строку
+        return super().form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+        print("POST запрос")  # Добавьте эту строку
+        return super().post(request, *args, **kwargs)
 
 
 class ResetPasswordCompleteView(PasswordResetCompleteView):
@@ -98,7 +138,6 @@ class ResetPasswordCompleteView(PasswordResetCompleteView):
         context["login_url"] = resolve_url(settings.LOGIN_URL)
         return context
 
-# TODO: Редактирование профиля пользователя
 # TODO: Главная страница
 # TODO: О ресторане
 # TODO: ЛК: просмотр истории бронирования
