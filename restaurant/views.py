@@ -126,6 +126,8 @@ class BookingCreateView(CreateView):
         return super().form_invalid(form)
 
 
+
+
 class MainPageView(TemplateView):
     """
     Главная страница ресторана.
