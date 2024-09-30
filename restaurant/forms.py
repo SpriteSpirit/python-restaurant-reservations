@@ -1,10 +1,16 @@
 from django import forms
 from django.utils import timezone
 from datetime import timedelta, datetime
-from .models import Booking
+
+from users.models import User
+from .models import Booking, Table
 
 
 class StyleFormMixin:
+    """
+    Добавляет стилевые атрибуты к полям формы - стилизация формы
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -14,12 +20,13 @@ class StyleFormMixin:
 
 
 class ChooseTableForm(StyleFormMixin, forms.ModelForm):
+    """
+    Форма выбора стола с поддержкой временных интервалов бронирования
+    """
     open_time = 10
     close_booking_time = 20
     time_step = 30
-
     time_reserved = forms.ChoiceField(label='Время бронирования')
-
     next_day = timezone.localdate() + timedelta(days=1)
 
     date_reserved = forms.DateField(
@@ -48,20 +55,32 @@ class ChooseTableForm(StyleFormMixin, forms.ModelForm):
 
 
 class BookingForm(StyleFormMixin, forms.ModelForm):
+    """
+    Форма бронирования с использованием стилей
+    """
     seats = forms.IntegerField(label='Количество мест', widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    table = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance.pk:
-            self.fields['seats'].initial = self.instance.table.seats
+
+        if 'initial' in kwargs and kwargs['initial']:
+            initial_data = kwargs['initial']
+
+            if 'seats' in initial_data:
+                self.fields['seats'].initial = initial_data['seats']
+            if 'table' in initial_data:
+                self.initial['table'] = initial_data['table']
+                self.fields['table'].widget.attrs['value'] = self.initial['table'].id
+    #
 
     class Meta:
         model = Booking
-        fields = ['date_reserved', 'time_reserved', 'table', 'seats', 'client', 'message']
+        fields = ['table', 'seats', 'date_reserved', 'time_reserved', 'message']
         widgets = {
-            'client': forms.TextInput(attrs={'placeholder': 'Имя и фамилия', 'readonly': 'readonly'}),
+            'table': forms.TextInput(attrs={'readonly': 'readonly'}),
+            # 'seats': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'date_reserved': forms.DateInput(attrs={'readonly': 'readonly'}),
+            'time_reserved': forms.TimeInput(attrs={'readonly': 'readonly'}),
             'message': forms.Textarea(attrs={'placeholder': 'Дополнительная информация'}),
-            'table': forms.TextInput(attrs={'placeholder': 'Стол', 'readonly': 'readonly'}),
-            'date_reserved': forms.TextInput(attrs={'placeholder': 'Дата бронирования', 'readonly': 'readonly'}),
-            'time_reserved': forms.TextInput(attrs={'placeholder': 'Время бронирования', 'readonly': 'readonly'}),
-            }
+        }

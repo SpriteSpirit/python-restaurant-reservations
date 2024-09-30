@@ -1,8 +1,9 @@
-from django.utils import timezone
-from django.views.generic import CreateView, ListView
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, ListView, TemplateView
 
 from restaurant.forms import ChooseTableForm, BookingForm
-from restaurant.models import Table, Booking
+from restaurant.models import Table, Booking, Restaurant
+from users.models import User
 
 
 class TableListView(ListView):
@@ -12,9 +13,9 @@ class TableListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        today = timezone.now().date()
+        # today = timezone.now().date()
         selected_date = None
-        selected_time= None
+        selected_time = None
         bookings = []
         table_statuses = []
 
@@ -29,7 +30,11 @@ class TableListView(ListView):
         booked_table_ids = [booking.table.id for booking in bookings]
 
         for table in context['tables']:
-            booking = Booking.objects.filter(table=table, date_reserved=selected_date, time_reserved=selected_time).first()
+            booking = Booking.objects.filter(
+                table=table,
+                date_reserved=selected_date,
+                time_reserved=selected_time
+            ).first()
 
             if booking:
                 table_status = {
@@ -67,20 +72,27 @@ class TableListView(ListView):
 
 class BookingCreateView(CreateView):
     """
-    View для создания бронирования.
+    Бронирование
     """
     model = Booking
     form_class = BookingForm
     template_name = 'restaurant/booking_form.html'
-    success_url = '/'
+    success_url = reverse_lazy('restaurant:index')
 
     def get_initial(self):
+        """
+         Получение начальных данных для формы заказа.
+         Если переданы id стола, дата и время бронирования,
+         присваивание текущего пользователя заказу и стола.
+        """
         initial = super().get_initial()
         table_id = self.kwargs.get('table_id')
         date_reserved = self.kwargs.get('date_reserved')
         time_reserved = self.kwargs.get('time_reserved')
+        user_id = self.request.user.pk
 
         if table_id and date_reserved and time_reserved:
+            initial['client'] = User.objects.get(pk=user_id)
             initial['table'] = Table.objects.get(id=table_id)
             initial['seats'] = Table.objects.get(id=table_id).seats
             initial['date_reserved'] = date_reserved
@@ -89,14 +101,64 @@ class BookingCreateView(CreateView):
         return initial
 
     def form_valid(self, form):
-        self.object = form.save()
+        """
+         Переопределение формы валидации.
+         Присваивание текущего пользователя к заказу.
+         Логирование данные перед сохранением.
+        """
+        booking = form.save(commit=False)
+        booking.client = self.request.user
 
-        if form.is_valid():
-            booking = form.save(commit=False)
-            print("Бронирование прошло успешно!")
-            print(f"Стол: {self.object.table}")
-            print(f"Дата бронирования: {self.object.date_reserved}")
-            print(f"Время бронирования: {self.object.time_reserved}")
-            booking.save()
+        print(f"Дата бронирования: {booking.date_reserved}")
+        print(f"Время бронирования: {booking.time_reserved}")
+        print(f"Стол: {booking.table}")
+        print(f"Клиент: {booking.client}")
+
+        booking.save()
 
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        """
+         Вывод ошибки формы
+        """
+        print("Форма не прошла валидацию. Ошибки:", form.errors)
+        return super().form_invalid(form)
+
+
+class MainPageView(TemplateView):
+    """
+    Главная страница ресторана.
+    """
+    model = Restaurant
+    template_name = 'restaurant/index.html'
+
+
+class AboutPageView(TemplateView):
+    """
+    Страница с информацией о ресторане.
+    """
+    model = Restaurant
+    template_name = 'restaurant/about.html'
+
+
+class MenuPageView(TemplateView):
+    """
+    Страница с меню.
+    """
+    model = Restaurant
+    template_name = 'restaurant/menu.html'
+
+
+class GalleryPageView(TemplateView):
+    """
+    Галерея.
+    """
+    model = Restaurant
+    template_name = 'restaurant/gallery.html'
+
+# TODO: ЛК: просмотр истории бронирования
+# TODO: ЛК: управление текущими бронированиями (изменение, отмена)
+# TODO: Админка:Управление пользователями
+# TODO: Админка:Управление бронированиями
+# TODO: Управление контентом сайта (тексты, изображения и т.д.)

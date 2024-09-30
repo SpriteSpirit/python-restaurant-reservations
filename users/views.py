@@ -2,7 +2,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView, LoginView, PasswordResetCompleteView, PasswordResetConfirmView
 from django.core.mail import send_mail
-from django.shortcuts import redirect, resolve_url
+from django.shortcuts import resolve_url
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.html import strip_tags
@@ -137,11 +137,3 @@ class ResetPasswordCompleteView(PasswordResetCompleteView):
         context = super().get_context_data(**kwargs)
         context["login_url"] = resolve_url(settings.LOGIN_URL)
         return context
-
-# TODO: Главная страница
-# TODO: О ресторане
-# TODO: ЛК: просмотр истории бронирования
-# TODO: ЛК: управление текущими бронированиями (изменение, отмена)
-# TODO: Админка:Управление пользователями
-# TODO: Админка:Управление бронированиями
-# TODO: Управление контентом сайта (тексты, изображения и т.д.)
