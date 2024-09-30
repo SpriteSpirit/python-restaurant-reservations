@@ -2,6 +2,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView, LoginView, PasswordResetCompleteView, PasswordResetConfirmView
 from django.core.mail import send_mail
+from django.http import HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
@@ -42,6 +43,18 @@ class UserDetailView(LoginView):
     model = User
     template_name = 'users/profile.html'
     context_object_name = 'user'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['note_text'] = self.request.user.notes
+        return context
+
+    def post(self, request, *args, **kwargs):
+        note_text = request.POST.get('note-text')
+        user = self.request.user
+        user.notes = note_text
+        user.save()
+        return HttpResponseRedirect(reverse('users:profile'))
 
 
 class UserUpdateView(UpdateView):

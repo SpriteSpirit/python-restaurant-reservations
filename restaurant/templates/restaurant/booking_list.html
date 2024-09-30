@@ -1,0 +1,50 @@
+{% extends 'restaurant/base.html'  %}
+{% load custom_filters %}
+{% load static %}
+{% block content %}
+
+<!-- Book A Table Section -->
+    <section id="book-a-table" class="book-a-table section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Ваши бронирования</h2>
+      </div><!-- End Section Title -->
+
+        <div class="container d-flex justify-content-center" data-aos="fade-up" data-aos-delay="100">
+            <div class="row">
+                <div class="col-lg-12">
+                     <!-- Бронирования -->
+                <div class="col-sm-6 mb-3 d-flex align-items-stretch">
+                    <div class="card bg-dark text-white w-100">
+                        <div class="card-body">
+                            <h6 class="mb-3">Брони</h6>
+                            {% if bookings %}
+                            {% for booking in bookings" %}
+                            <div class="mb-2">
+                                <small>{{ booking.table.number }}
+                                    <span class="text-primary">[{{ booking.table.seats }}]</span>
+                                </small>
+                                <small>{{ booking.date_reserved }}
+                                    <span class="text-primary">[{{ booking.time_reserved}}]</span>
+                                </small>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="bg-secondary" style="width: 100%; height: 5px;"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <p style="color: #ccc">
+                                Нет бронирований
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section><!-- /Book A Table Section -->
+ {% endblock %}

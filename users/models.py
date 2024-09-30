@@ -21,6 +21,7 @@ class User(AbstractUser):
                                default='users/avatars/default.jpg', **NULLABLE)
 
     token = models.CharField(max_length=100, verbose_name='Token', **NULLABLE)
+    notes = models.TextField(blank=True, null=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

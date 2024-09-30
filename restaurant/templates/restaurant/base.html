@@ -67,6 +67,11 @@
                     <li><a href="{% url 'restaurant:gallery' %}">Галерея</a></li>
                     <li><a href="{% url 'restaurant:about' %}">О нас</a></li>
                     <li><a href="#contact">Контакты</a></li>
+                    <li><a href="{% url 'restaurant:booking_list' %}">
+                        {% if user.is_authenticated %}
+                        Бронирования
+                        {% endif %}
+                    </a></li>
                     <li>
                         {% if user.is_authenticated %}
                             {% if not user.is_superuser or not user.is_staff %}

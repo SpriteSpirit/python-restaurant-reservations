@@ -126,6 +126,17 @@ class BookingCreateView(CreateView):
         return super().form_invalid(form)
 
 
+class BookingListView(ListView):
+    """
+    Просмотр списка бронирований
+    """
+    model = Booking
+    context_object_name = 'bookings'
+
+    def get_queryset(self):
+        """ Просмотр только своих бронирований """
+        user = self.request.user
+        return Booking.objects.filter(client=user)
 
 
 class MainPageView(TemplateView):
