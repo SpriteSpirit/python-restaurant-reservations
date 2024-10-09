@@ -1,13 +1,11 @@
-<!DOCTYPE html>
-{% extends 'restaurant/base.html'  %}
+{% extends 'restaurant/base.html' %}
 {% load custom_filters %}
 {% load static %}
 {% block content %}
 
-
 <!-- Page Title -->
 <div class="page-title position-relative" data-aos="fade"
-     style="background-image: url(static/img/page-title-bg.webp);">
+     style="background-image: url({% static 'img/page-title-bg.webp' %});">
     <div class="container position-relative">
         <h1>Выбор стола<br></h1>
         <h5>Обратите внимание!<br></h5>
@@ -32,38 +30,34 @@
             <thead>
             <tr>
                 <th scope="col">Стол №</th>
-                <th scope="col">Кол-во гостей</th>
+                <th scope="col">Кол-во мест</th>
                 <th scope="col">Статус</th>
-                <th scope="col">Дата и время бронирования</th>
                 <th scope="col">Бронь</th>
             </tr>
             </thead>
             <tbody>
-            {% for table in table_statuses %}
+            {% for table, is_available in table_statuses %}
             <tr>
                 <th scope="row">{{ table.number }}</th>
-                <td>{{ table.capacity }}</td>
+                <td>{{ table.seats }}</td>
                 <td>
-                    {% if table.is_booked %}
-                    <span class="badge bg-danger">Занят</span>
-                    {% else %}
+                    {% if is_available %}
                     <span class="badge bg-success">Свободен</span>
+                    {% else %}
+                    <span class="badge bg-danger">Занят</span>
                     {% endif %}
                 </td>
                 <td>
-                    {{ table.date_reserved|translate_date }} :: {{ table.time_reserved|translate_time }}
-                </td>
-                <td>
-                    {% if table.is_booked %}
+                    {% if is_available %}
+                    <a class="btn btn-light"
+                       href="{% url 'restaurant:booking_create' table_id=table.pk date_reserved=selected_date time_reserved=selected_time %}"
+                       role="button" style="width: 140px">
+                        Забронировать
+                    </a>
+                    {% else %}
                     <a href="#" class="btn btn-secondary disabled" tabindex="-1" role="button" aria-disabled="true"
                        style="width: 140px">
                         Недоступен
-                    </a>
-                    {% else %}
-                    <a class="btn btn-light"
-                       href="{% url 'restaurant:booking_create' table_id=table.number date_reserved=selected_date time_reserved=selected_time %}"
-                       role="button" style="width: 140px">
-                        Забронировать
                     </a>
                     {% endif %}
                 </td>

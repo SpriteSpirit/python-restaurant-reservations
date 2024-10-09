@@ -3,7 +3,9 @@ from users.models import User
 
 
 class Command(BaseCommand):
-    """ Создание суперпользователя """
+    """
+    Создание суперпользователя
+    """
     help = 'Создание суперпользователя с полными правами доступа'
 
     def handle(self, *args, **options):

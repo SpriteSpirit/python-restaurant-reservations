@@ -2,8 +2,7 @@ from django import forms
 from django.utils import timezone
 from datetime import timedelta, datetime
 
-from users.models import User
-from .models import Booking, Table
+from .models import Booking
 
 
 class StyleFormMixin:
@@ -19,7 +18,7 @@ class StyleFormMixin:
                 field.widget.attrs['class'] = 'form-control'
 
 
-class ChooseTableForm(StyleFormMixin, forms.ModelForm):
+class TableForm(StyleFormMixin, forms.ModelForm):
     """
     Форма выбора стола с поддержкой временных интервалов бронирования
     """
@@ -39,7 +38,7 @@ class ChooseTableForm(StyleFormMixin, forms.ModelForm):
     )
 
     def __init__(self, *args, **kwargs):
-        super(ChooseTableForm, self).__init__(*args, **kwargs)
+        super(TableForm, self).__init__(*args, **kwargs)
 
         times = [
             (datetime.strptime(f"{hour:02d}:{minute:02d}", "%H:%M").time(), f"{hour:02d}:{minute:02d}")
@@ -58,29 +57,68 @@ class BookingForm(StyleFormMixin, forms.ModelForm):
     """
     Форма бронирования с использованием стилей
     """
-    seats = forms.IntegerField(label='Количество мест', widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-    table = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        instance = kwargs.get('instance')
 
-        if 'initial' in kwargs and kwargs['initial']:
-            initial_data = kwargs['initial']
-
-            if 'seats' in initial_data:
-                self.fields['seats'].initial = initial_data['seats']
-            if 'table' in initial_data:
-                self.initial['table'] = initial_data['table']
-                self.fields['table'].widget.attrs['value'] = self.initial['table'].id
-    #
+        if instance:
+            self.initial['date_reserved'] = instance.date_reserved
+            self.initial['time_reserved'] = instance.time_reserved
 
     class Meta:
         model = Booking
-        fields = ['table', 'seats', 'date_reserved', 'time_reserved', 'message']
+        fields = ['message']
         widgets = {
-            'table': forms.TextInput(attrs={'readonly': 'readonly'}),
-            # 'seats': forms.TextInput(attrs={'readonly': 'readonly'}),
-            'date_reserved': forms.DateInput(attrs={'readonly': 'readonly'}),
-            'time_reserved': forms.TimeInput(attrs={'readonly': 'readonly'}),
-            'message': forms.Textarea(attrs={'placeholder': 'Дополнительная информация'}),
+            'message': forms.Textarea(attrs={'placeholder': 'Дополнительная информация', 'rows': 6}),
+        }
+
+
+class BookingUpdateForm(StyleFormMixin, forms.ModelForm):
+    """
+    Форма редактирования бронирования с использованием стилей
+    """
+    open_time = 10
+    close_booking_time = 20
+    time_step = 30
+    time_reserved = forms.ChoiceField(label='Время бронирования')
+    next_day = timezone.localdate() + timedelta(days=1)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        instance = kwargs.get('instance')
+
+        if instance:
+            self.initial['date_reserved'] = instance.date_reserved
+            self.initial['time_reserved'] = instance.time_reserved
+
+        all_times = [
+            (datetime.strptime(f"{hour:02d}:{minute:02d}", "%H:%M").time(), f"{hour:02d}:{minute:02d}")
+            for hour in range(self.open_time, self.close_booking_time + 1) for minute in [0, self.time_step]
+            if hour < self.close_booking_time or (hour == self.close_booking_time and minute == 0)
+        ]
+
+        # Получаем занятые времена для выбранного стола и даты
+        booked_times = self.get_booked_times(instance.table, self.initial.get('date_reserved', self.next_day))
+
+        # Фильтруем список времен, оставляя только свободные
+        available_times = [(t, s) for t, s in all_times if (t, s) not in booked_times]
+
+        self.fields['time_reserved'].choices = available_times
+
+    @staticmethod
+    def get_booked_times(table, date):
+        """
+        Возвращает список занятых времен для указанного стола и даты.
+        НЕОБХОДИМО РЕАЛИЗОВАТЬ ЗАПРОС К БАЗЕ ДАННЫХ.
+        """
+        from .models import Booking  # Импортируйте вашу модель Booking
+        booked_slots = Booking.objects.filter(table=table, date_reserved=date).values_list('time_reserved', flat=True)
+        return [(datetime.strptime(str(slot), '%H:%M:%S').time(), str(slot)[:5]) for slot in booked_slots]
+
+    class Meta:
+        model = Booking
+        fields = ['time_reserved', 'message']
+        widgets = {
+            'message': forms.Textarea(attrs={'placeholder': 'Дополнительная информация', 'rows': 6}),
         }
