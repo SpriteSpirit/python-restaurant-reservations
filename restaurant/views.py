@@ -11,13 +11,22 @@ from restaurant.models import Table, Booking, Restaurant, BookingHistory
 
 
 class TableSelectionView(View):
+    """
+    Отображает страницу со списком доступных столов и формой для выбора даты и времени бронирования.
+    """
     @staticmethod
     def get(request):
+        """
+        Отображение формы выбора даты и времени бронирования.
+        """
         form = TableForm()
         return render(request, 'restaurant/table_list.html', {'form': form})
 
     @staticmethod
     def post(request):
+        """
+        Получение и проверка введенных даты и времени и отображение списка доступных столов.
+        """
         form = TableForm(request.POST)
         if form.is_valid():
             date_reserved = form.cleaned_data['date_reserved']
@@ -47,8 +56,14 @@ class TableSelectionView(View):
 
 
 class BookingCreateView(View):
+    """
+    Создание бронирования
+    """
     @staticmethod
     def get(request, table_id, date_reserved, time_reserved):
+        """
+        Получение информации о столе, дате и времени
+        """
         # Получаем информацию о столе
         table = Table.objects.get(id=table_id)
 
@@ -67,6 +82,11 @@ class BookingCreateView(View):
         })
 
     def post(self, request, table_id, date_reserved, time_reserved):
+        """
+        Создание бронирования.
+        Присваивание текущего пользователя к заказу.
+        Логирование данные перед сохранением.
+        """
         form = BookingForm(request.POST)
         if form.is_valid():
             booking = form.save(commit=False)
@@ -75,6 +95,7 @@ class BookingCreateView(View):
             booking.date_reserved = date_reserved
             booking.time_reserved = time_reserved
             booking.save()
+
             return redirect('restaurant:booking_list')
         return render(request, 'restaurant/booking_form.html', {'form': form})
 
