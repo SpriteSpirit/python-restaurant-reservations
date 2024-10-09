@@ -1,104 +1,91 @@
+from datetime import datetime, timedelta
+
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView, TemplateView
+from django.views import View
+from django.views.generic import ListView, TemplateView, UpdateView
 
-from restaurant.forms import ChooseTableForm, BookingForm
-from restaurant.models import Table, Booking, Restaurant
-from users.models import User
+from restaurant.forms import TableForm, BookingForm, BookingUpdateForm
+from restaurant.models import Table, Booking, Restaurant, BookingHistory
 
 
-class TableListView(ListView):
-    model = Table
-    template_name = 'restaurant/choose_table.html'
-    context_object_name = 'tables'
+class TableSelectionView(View):
+    @staticmethod
+    def get(request):
+        form = TableForm()
+        return render(request, 'restaurant/table_list.html', {'form': form})
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # today = timezone.now().date()
-        selected_date = None
-        selected_time = None
-        bookings = []
-        table_statuses = []
-
-        form = ChooseTableForm(self.request.POST or None)
-        context['form'] = form
-
+    @staticmethod
+    def post(request):
+        form = TableForm(request.POST)
         if form.is_valid():
-            selected_date = form.cleaned_data['date_reserved']
-            selected_time = form.cleaned_data['time_reserved']
-            bookings = Booking.objects.filter(date_reserved=selected_date, time_reserved=selected_time)
+            date_reserved = form.cleaned_data['date_reserved']
+            time_reserved = datetime.strptime(form.cleaned_data['time_reserved'], "%H:%M:%S").time()
 
-        booked_table_ids = [booking.table.id for booking in bookings]
+            # Получаем все столы и проверяем их доступность
+            tables = Table.objects.all()
+            table_statuses = []
+            for table in tables:
+                is_available = not Booking.objects.filter(
+                    table=table,
+                    date_reserved=date_reserved,
+                    time_reserved__range=(
+                        time_reserved,
+                        (datetime.combine(date_reserved, time_reserved) + timedelta(hours=3)).time()
+                    )
+                ).exists()
+                table_statuses.append((table, is_available))
 
-        for table in context['tables']:
-            booking = Booking.objects.filter(
-                table=table,
-                date_reserved=selected_date,
-                time_reserved=selected_time
-            ).first()
-
-            if booking:
-                table_status = {
-                    'number': table.number,
-                    'seats': table.seats,
-                    'is_booked': table.id in booked_table_ids,
-                    'date_reserved': booking.date_reserved,
-                    'time_reserved': booking.time_reserved,
-                }
-            else:
-                table_status = {
-                    'number': table.number,
-                    'seats': table.seats,
-                    'is_booked': False,
-                    'date_reserved': "-",
-                    'time_reserved': "-",
-                }
-
-            table_statuses.append(table_status)
-
-        context['table_statuses'] = table_statuses
-        context['selected_date'] = selected_date
-        context['selected_time'] = selected_time
-
-        print("Дата:", selected_date)
-        print("Время:", selected_time)
-        print("Бронирования:", bookings)
-        print("Статус столов:", table_statuses)
-
-        return context
-
-    def post(self, request, *args, **kwargs):
-        return self.get(request, *args, **kwargs)
+            return render(request, 'restaurant/table_list.html', {
+                'form': form,
+                'table_statuses': table_statuses,
+                'selected_date': date_reserved,
+                'selected_time': time_reserved
+            })
+        return render(request, 'restaurant/table_list.html', {'form': form})
 
 
-class BookingCreateView(CreateView):
+class BookingCreateView(View):
+    @staticmethod
+    def get(request, table_id, date_reserved, time_reserved):
+        # Получаем информацию о столе
+        table = Table.objects.get(id=table_id)
+
+        # Создаем форму с предопределенными значениями
+        form = BookingForm(initial={
+            'table': table,
+            'date_reserved': date_reserved,
+            'time_reserved': time_reserved,
+        })
+
+        return render(request, 'restaurant/booking_form.html', {
+            'form': form,
+            'table': table,
+            'date_reserved': date_reserved,
+            'time_reserved': time_reserved,
+        })
+
+    def post(self, request, table_id, date_reserved, time_reserved):
+        form = BookingForm(request.POST)
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.client = self.request.user
+            booking.table_id = table_id
+            booking.date_reserved = date_reserved
+            booking.time_reserved = time_reserved
+            booking.save()
+            return redirect('restaurant:booking_list')
+        return render(request, 'restaurant/booking_form.html', {'form': form})
+
+
+class BookingUpdateView(UpdateView):
     """
-    Бронирование
+    Редактирование бронирования
     """
     model = Booking
-    form_class = BookingForm
-    template_name = 'restaurant/booking_form.html'
-    success_url = reverse_lazy('restaurant:index')
-
-    def get_initial(self):
-        """
-         Получение начальных данных для формы заказа.
-         Если переданы id стола, дата и время бронирования,
-         присваивание текущего пользователя заказу и стола.
-        """
-        initial = super().get_initial()
-        table_id = self.kwargs.get('table_id')
-        date_reserved = self.kwargs.get('date_reserved')
-        time_reserved = self.kwargs.get('time_reserved')
-        user_id = self.request.user.pk
-
-        if table_id and date_reserved and time_reserved:
-            initial['client'] = User.objects.get(pk=user_id)
-            initial['table'] = Table.objects.get(id=table_id)
-            initial['seats'] = Table.objects.get(id=table_id).seats
-            initial['date_reserved'] = date_reserved
-            initial['time_reserved'] = time_reserved
-
-        return initial
+    form_class = BookingUpdateForm
+    success_url = reverse_lazy('restaurant:booking_list')
 
     def form_valid(self, form):
         """
@@ -125,6 +112,19 @@ class BookingCreateView(CreateView):
         print("Форма не прошла валидацию. Ошибки:", form.errors)
         return super().form_invalid(form)
 
+    def get_context_data(self, **kwargs):
+        """
+        Дополнительная информация
+        """
+        context = super().get_context_data(**kwargs)
+        table = Table.objects.get(pk=self.object.table.pk)
+
+        context['table'] = table
+        context['date'] = self.object.date_reserved
+        context['is_edit'] = True
+
+        return context
+
 
 class BookingListView(ListView):
     """
@@ -134,9 +134,35 @@ class BookingListView(ListView):
     context_object_name = 'bookings'
 
     def get_queryset(self):
-        """ Просмотр только своих бронирований """
+        """
+        Просмотр только своих бронирований
+        """
         user = self.request.user
-        return Booking.objects.filter(client=user)
+
+        # порядок отображения по дате и времени
+        ordered = Booking.objects.filter(client=user).order_by('date_reserved', 'time_reserved')
+        print(ordered)
+        return ordered
+
+    @staticmethod
+    def post(request):
+        """
+        Отмена бронирования
+        """
+        booking_id = request.POST.get('booking_id')
+        booking = get_object_or_404(Booking, pk=booking_id, client=request.user)
+        booking.cancel()
+        messages.success(request, 'Бронирование успешно отменено.')
+        return redirect('restaurant:booking_list')
+
+    def get_context_data(self, **kwargs):
+        """
+        Дополнительная информация
+        """
+        context = super().get_context_data(**kwargs)
+        context['booking_history'] = BookingHistory.objects.filter(client=self.request.user).order_by('-cancelled_at')
+        # print(context['booking_history'])
+        return context
 
 
 class MainPageView(TemplateView):
