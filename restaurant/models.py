@@ -54,11 +54,14 @@ class AbstractBooking(models.Model):
     """
     Абстрактная базовая модель для бронирований.
     """
-    table = models.ForeignKey(Table, on_delete=models.SET_NULL, related_name='%(class)ss', verbose_name='Стол', **NULLABLE)
-    client = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='%(class)ss', verbose_name="Клиент", **NULLABLE)
+    table = models.ForeignKey(Table, on_delete=models.SET_NULL, related_name='%(class)ss',
+                              verbose_name='Стол', **NULLABLE)
+    client = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='%(class)ss',
+                               verbose_name="Клиент", **NULLABLE)
     date_reserved = models.DateField(verbose_name="Дата бронирования")
     time_reserved = models.TimeField(verbose_name="Время бронирования")
     duration = models.PositiveIntegerField(verbose_name="Продолжительность бронирования", default=3)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время создания")
     message = models.TextField(verbose_name="Сообщение",  **NULLABLE)
 
     class Meta:
