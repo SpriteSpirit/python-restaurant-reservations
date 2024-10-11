@@ -23,6 +23,7 @@ django-phonenumbers = "^1.0.1"
 django-cors-headers = "^4.4.0"
 flake8 = "^7.1.1"
 flake8-html = "^0.4.3"
+flower = "^2.0.1"
 
 
 [build-system]
