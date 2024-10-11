@@ -1,4 +1,5 @@
 from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView, LoginView, PasswordResetCompleteView, PasswordResetConfirmView
 from django.core.mail import send_mail
@@ -36,7 +37,7 @@ class CustomLoginView(LoginView):
     success_url = reverse_lazy('restaurant:index')
 
 
-class UserDetailView(LoginView):
+class UserDetailView(LoginRequiredMixin, LoginView):
     """
     Просмотр профиля пользователя
     """
@@ -57,7 +58,7 @@ class UserDetailView(LoginView):
         return HttpResponseRedirect(reverse('users:profile'))
 
 
-class UserUpdateView(UpdateView):
+class UserUpdateView(LoginRequiredMixin, UpdateView):
     """
     Редактирование информации пользователя
     """
@@ -96,7 +97,6 @@ class ResetPasswordView(PasswordResetView):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            # Можно обработать случай, когда пользователь с таким email не найден
             return super().form_valid(form)
 
         token = default_token_generator.make_token(user)

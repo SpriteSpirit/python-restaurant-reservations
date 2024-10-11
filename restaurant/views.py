@@ -1,16 +1,20 @@
 from datetime import datetime, timedelta
 
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import ListView, TemplateView, UpdateView
 
+from config import settings
 from restaurant.forms import TableForm, BookingForm, BookingUpdateForm
 from restaurant.models import Table, Booking, Restaurant, BookingHistory
+from restaurant.templatetags.custom_filters import formatting_date, formatting_time
 
 
-class TableSelectionView(View):
+class TableSelectionView(LoginRequiredMixin, View):
     """
     Отображает страницу со списком доступных столов и формой для выбора даты и времени бронирования.
     """
@@ -55,7 +59,7 @@ class TableSelectionView(View):
         return render(request, 'restaurant/table_list.html', {'form': form})
 
 
-class BookingCreateView(View):
+class BookingCreateView(LoginRequiredMixin, View):
     """
     Создание бронирования
     """
@@ -96,11 +100,32 @@ class BookingCreateView(View):
             booking.time_reserved = time_reserved
             booking.save()
 
+            # Отправка письма пользователю
+            subject = 'Подтверждение бронирования стола'
+            message = (
+                f'Уважаемый(ая) {request.user.first_name},\n\n'
+                f'Бронирование стола №{booking.table.number} [мест: {booking.table.seats}] на '
+                f'{formatting_date(booking.date_reserved)} в {formatting_time(booking.time_reserved)} '
+                f'успешно создано.\n\n'
+                f'Спасибо за бронирование!\n'
+                f'До скорой встречи!'
+            )
+            from_email = settings.EMAIL_HOST_USER
+            recipient_list = [request.user.email]
+            send_mail(subject, message, from_email, recipient_list)
+
             return redirect('restaurant:booking_list')
-        return render(request, 'restaurant/booking_form.html', {'form': form})
+        else:
+            table = Table.objects.get(id=table_id)
+            return render(request, 'restaurant/booking_form.html', {
+                'form': form,
+                'table': table,
+                'date_reserved': date_reserved,
+                'time_reserved': time_reserved,
+            })
 
 
-class BookingUpdateView(UpdateView):
+class BookingUpdateView(LoginRequiredMixin, UpdateView):
     """
     Редактирование бронирования
     """
@@ -147,7 +172,7 @@ class BookingUpdateView(UpdateView):
         return context
 
 
-class BookingListView(ListView):
+class BookingListView(LoginRequiredMixin, ListView):
     """
     Просмотр списка бронирований
     """
@@ -216,9 +241,3 @@ class GalleryPageView(TemplateView):
     """
     model = Restaurant
     template_name = 'restaurant/gallery.html'
-
-# TODO: ЛК: просмотр истории бронирования
-# TODO: ЛК: управление текущими бронированиями (изменение, отмена)
-# TODO: Админка:Управление пользователями
-# TODO: Админка:Управление бронированиями
-# TODO: Управление контентом сайта (тексты, изображения и т.д.)

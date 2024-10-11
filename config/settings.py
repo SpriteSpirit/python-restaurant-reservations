@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
-from celery.schedules import crontab
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -169,7 +168,7 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = os.getenv("CELERY_BROKER_CONNECTION_
 CELERY_BEAT_SCHEDULE = {
     'cancel-expired-bookings-every-5-minutes': {
         'task': 'restaurant.tasks.cancel_expired_bookings',
-        'schedule': 30.0,  # каждые 5 минут = 300 секунд
+        'schedule': 300,  # каждые 5 минут = 300 секунд
     },
 }
 

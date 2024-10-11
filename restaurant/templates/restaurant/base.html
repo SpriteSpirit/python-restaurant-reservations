@@ -74,11 +74,7 @@
                     </a></li>
                     <li>
                         {% if user.is_authenticated %}
-                            {% if not user.is_superuser or not user.is_staff %}
                             <a href="{% url 'users:profile' user.pk %}" style="color: gold">Личный кабинет</a>
-                            {% elif user.is_superuser or user.is_staff %}
-                            <a href="{% url 'users:profile' user.pk %}" style="color: gold">Администрирование</a>
-                            {% endif %}
                         {% endif %}
                     </li>
                     <li>
