@@ -84,12 +84,12 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
         return reverse('users:profile', args=[self.kwargs.get('pk')])
 
 
-class ResetPasswordView(PasswordResetView):
+class CustomPasswordResetView(PasswordResetView):
     """
-    Сброса пароля - переопределение класса PasswordResetView
+    Сброса пароля - переопределение класса CustomPasswordResetView
     """
     template_name = 'users/password_reset.html'
-    success_url = reverse_lazy('restaurant:index')
+    success_url = reverse_lazy('users:password_reset_done')
     form_class = PasswordResetForm
 
     def form_valid(self, form):
@@ -120,7 +120,7 @@ class ResetPasswordView(PasswordResetView):
             html_message=message,
         )
 
-        return super().form_valid(form)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):

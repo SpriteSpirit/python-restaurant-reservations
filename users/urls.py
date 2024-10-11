@@ -2,7 +2,7 @@ from django.contrib.auth.views import LogoutView, PasswordResetDoneView
 from django.urls import path
 
 from users.apps import UsersConfig
-from users.views import CustomLoginView, UserRegisterView, UserDetailView, ResetPasswordView, \
+from users.views import CustomLoginView, UserRegisterView, UserDetailView, CustomPasswordResetView, \
     ResetPasswordCompleteView, CustomPasswordResetConfirmView, UserUpdateView
 
 app_name = UsersConfig.name
@@ -15,7 +15,7 @@ urlpatterns = [
     path("update/<int:pk>", UserUpdateView.as_view(), name='update'),
 
     # reset password
-    path('password-reset/', ResetPasswordView.as_view(), name='password_reset'),
+    path('password-reset/', CustomPasswordResetView.as_view(), name='password_reset'),
     path('password-reset-confirm/<uidb64>/<str:token>/',
          CustomPasswordResetConfirmView.as_view(template_name='users/password_reset_confirm.html'),
          name='password_reset_confirm'),

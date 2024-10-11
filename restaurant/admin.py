@@ -22,4 +22,3 @@ class BookingAdmin(admin.ModelAdmin):
     list_display = ('id', 'table', 'client', 'date_reserved', 'time_reserved', 'duration', 'is_active')
     list_filter = ('table',)
     search_fields = ('table', 'client', 'date_reserved')
-

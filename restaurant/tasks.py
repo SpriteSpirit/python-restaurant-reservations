@@ -27,4 +27,4 @@ def cancel_expired_bookings():
         # Если текущее время больше или равно времени истечения, отменяем бронирование
         if now >= expiration_time:
             booking.cancel()
-            print(f'Бронирование для стола {booking.table.number} было отменено, т.к. истекло время')
+            print(f'Бронирование для стола {booking.table.number} было отменено, так как истекло время')

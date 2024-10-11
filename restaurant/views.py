@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views import View
@@ -18,6 +19,7 @@ class TableSelectionView(LoginRequiredMixin, View):
     """
     Отображает страницу со списком доступных столов и формой для выбора даты и времени бронирования.
     """
+
     @staticmethod
     def get(request):
         """
@@ -63,6 +65,7 @@ class BookingCreateView(LoginRequiredMixin, View):
     """
     Создание бронирования
     """
+
     @staticmethod
     def get(request, table_id, date_reserved, time_reserved):
         """
@@ -217,6 +220,41 @@ class MainPageView(TemplateView):
     """
     model = Restaurant
     template_name = 'restaurant/index.html'
+    success_template = 'restaurant/success_send_message.html'
+
+    def post(self, request):
+        """
+        Обработка POST-запроса: получение данных из формы и отправка письма.
+        """
+        # Получение данных из формы
+        name = request.POST.get('name', '')
+        email = request.POST.get('email', '')
+        phone = request.POST.get('phone', '')
+        message_content = request.POST.get('message', '')
+
+        # Проверка, что обязательные поля заполнены
+        if not name or not email or not message_content:
+            return HttpResponse('Пожалуйста, заполните все обязательные поля.')
+
+        # Формирование сообщения
+        message = f"""
+               Поступила обратная связь от пользователя:
+               Имя: {name}
+               Email: {email}
+               Телефон: {phone}
+               Сообщение: {message_content}
+               """
+
+        # Отправка письма
+        send_mail(
+            f'Сообщение от пользователя {email}',
+            message,
+            settings.EMAIL_HOST_USER,
+            [settings.EMAIL_HOST_USER],
+        )
+
+        # Отображение страницы успеха
+        return render(request, self.success_template)
 
 
 class AboutPageView(TemplateView):
@@ -241,3 +279,48 @@ class GalleryPageView(TemplateView):
     """
     model = Restaurant
     template_name = 'restaurant/gallery.html'
+
+
+class ContactPageView(View):
+    template_name = 'restaurant/contacts.html'
+    success_template = 'restaurant/success_send_message.html'
+
+    def get(self, request):
+        """
+        Обработка GET-запроса: отображаем страницу с формой.
+        """
+        return render(request, self.template_name)
+
+    def post(self, request):
+        """
+        Обработка POST-запроса: получение данных из формы и отправка письма.
+        """
+        # Получение данных из формы
+        name = request.POST.get('name', '')
+        email = request.POST.get('email', '')
+        phone = request.POST.get('phone', '')
+        message_content = request.POST.get('message', '')
+
+        # Проверка, что обязательные поля заполнены
+        if not name or not email or not message_content:
+            return HttpResponse('Пожалуйста, заполните все обязательные поля.')
+
+        # Формирование сообщения
+        message = f"""
+               Поступила обратная связь от пользователя:
+               Имя: {name}
+               Email: {email}
+               Телефон: {phone}
+               Сообщение: {message_content}
+               """
+
+        # Отправка письма
+        send_mail(
+            f'Сообщение от пользователя {email}',
+            message,
+            settings.EMAIL_HOST_USER,
+            [settings.EMAIL_HOST_USER],
+        )
+
+        # Отображение страницы успеха
+        return render(request, self.success_template)

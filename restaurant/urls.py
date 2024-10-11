@@ -1,7 +1,7 @@
 from django.urls import path
 
 from restaurant.apps import RestaurantConfig
-from restaurant.views import MainPageView, AboutPageView, MenuPageView, \
+from restaurant.views import MainPageView, AboutPageView, MenuPageView, ContactPageView, \
     GalleryPageView, BookingListView, BookingUpdateView, TableSelectionView, BookingCreateView
 
 app_name = RestaurantConfig.name
@@ -11,6 +11,7 @@ urlpatterns = [
     path("about/", AboutPageView.as_view(), name='about'),
     path("menu/", MenuPageView.as_view(), name='menu'),
     path("gallery/", GalleryPageView.as_view(), name='gallery'),
+    path("contacts/", ContactPageView.as_view(), name='contacts'),
 
     # booking
     path("table_list/", TableSelectionView.as_view(), name='table_list'),

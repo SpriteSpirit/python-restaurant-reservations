@@ -66,7 +66,7 @@
                     <li><a href="{% url 'restaurant:menu' %}">Меню</a></li>
                     <li><a href="{% url 'restaurant:gallery' %}">Галерея</a></li>
                     <li><a href="{% url 'restaurant:about' %}">О нас</a></li>
-                    <li><a href="#contact">Контакты</a></li>
+                    <li><a href="{% url 'restaurant:contacts' %}">Контакты</a></li>
                     <li><a href="{% url 'restaurant:booking_list' %}">
                         {% if user.is_authenticated %}
                         Бронирования
@@ -74,7 +74,12 @@
                     </a></li>
                     <li>
                         {% if user.is_authenticated %}
-                            <a href="{% url 'users:profile' user.pk %}" style="color: gold">Личный кабинет</a>
+                        <a href="{% url 'users:profile' user.pk %}" style="color: gold">Личный кабинет</a>
+                        {% endif %}
+                    </li>
+                    <li>
+                        {% if not user.is_authenticated %}
+                        <a style="color: gold; padding: 18px 15px; " href="{% url 'users:register' %}">Регистрация</a>
                         {% endif %}
                     </li>
                     <li>
@@ -90,12 +95,12 @@
                         </form>
                         {% endif %}
                     </li>
-
                 </ul>
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
 
             </nav>
-            <a class="btn-book-a-table d-none d-xl-block" style="" href="{% url 'restaurant:table_list' %}">Забронировать стол</a>
+            <a class="btn-book-a-table d-none d-xl-block" style="" href="{% url 'restaurant:table_list' %}">Забронировать
+                стол</a>
 
         </div>
 

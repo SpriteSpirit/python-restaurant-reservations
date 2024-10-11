@@ -9,9 +9,9 @@
 
     <div class="container">
         <div class="row my-5">
-            <div class="col-lg-8 d-flex flex-column align-items-center align-items-md-start">
-                <h2 data-aos="fade-up" data-aos-delay="100">Добро пожаловать в
-                    гриль-бар<br><span>Черная жемчужина</span></h2>
+            <div class="col-lg-9 d-flex flex-column align-items-center align-items-md-start">
+                <h2 data-aos="fade-up" data-aos-delay="150">Добро пожаловать в
+                    гриль-ресторан<br><span>"Черная жемчужина"</span></h2>
                 <div class="container section-title" data-aos="fade-up">
                     <p>Еда - наше ремесло</p>
                 </div><!-- End Section Title -->
@@ -20,7 +20,7 @@
                     <a href="{% url 'restaurant:table_list' %}" class="cta-btn">Забронировать стол</a>
                 </div>
             </div>
-            <div class="col-lg-4 d-flex align-items-center justify-content-center mt-5 mt-lg-0">
+            <div class="col-lg-3 d-flex align-items-center justify-content-center mt-5 mt-lg-0">
                 <a href="https://youtu.be/t4gN-iqeY0E?list=PLOGfBZ-R3P8RWTn91wG56RJlr1SnRxQLY"
                    class="glightbox pulsating-play-btn"></a>
             </div>
@@ -30,7 +30,7 @@
                     <div id="specials" class="specials section"
                          style="border-radius: 20px; width: 140vh; opacity: 0.7;">
                         <div class="container" data-aos="fade-up" data-aos-delay="100">
-                            <div class="row">
+                            <div class="row" style="height: 43vh">
                                 <div class="col-lg-3">
                                     <ul class="nav nav-tabs flex-column" style="background-color: black;">
                                         <li class="nav-item">
@@ -64,14 +64,14 @@
                                         <div class="tab-pane active show" id="specials-tab-1">
                                             <div class="row">
                                                 <div class="col-lg-8 details order-2 order-lg-1 mb-4">
-                                                    <h3 style="font-size: 22px">Гриль-бар «Чёрная Жемчужина»</h3>
+                                                    <h3 style="font-size: 22px">Гриль-ресторан «Чёрная Жемчужина»</h3>
                                                     <hr>
-                                                    <p class="fst-italic m-auto" style="font-size: 20px;">Уникальное
+                                                    <p class="fst-italic my-5" style="font-size: 20px;">Уникальное
                                                         место, где искусство
                                                         кулинарии встречается с теплой и дружелюбной
                                                         атмосферой. </p>
                                                     <hr>
-                                                    <p class="m-auto" style="font-size: 20px;">Наши опытные повара создают
+                                                    <p class="mt-3" style="font-size: 20px;">Наши опытные повара создают
                                                         неповторимые блюда на открытом огне, сохраняя все лучшие
                                                         традиции гриль-кухни. Мы используем только оригинальные
                                                         специи, чтобы каждый посетитель мог насладиться в полной мере
@@ -154,6 +154,7 @@
                                                                 <h3 class="h2 display-6 text-center">Напишите нам</h3>
                                                                 <form class="mb-2" method="post" id="contactForm"
                                                                       name="contactForm">
+                                                                    {% csrf_token %}
                                                                     <div class="row d-flex align-items-center justify-content-center">
                                                                         <div class="col-md-6 form-group mb-3">
                                                                             <label for="name" class="col-form-label">Имя
@@ -203,7 +204,7 @@
                                                                         <div class="d-flex justify-content-center mt-3">
                                                                             <button type="submit"
                                                                                     class="btn rounded-3 text-dark"
-                                                                                    style="background-color: gold; width: 59vh;">
+                                                                                    style="background-color: gold; width: 80vh;  height: 5vh">
                                                                                 Отправить
                                                                             </button>
                                                                         </div>
@@ -239,7 +240,6 @@
         const name = document.getElementById('name');
         const email = document.getElementById('email');
         const phone = document.getElementById('phone');
-        const company = document.getElementById('company');
         const message = document.getElementById('message');
 
         if (!name.value) {
