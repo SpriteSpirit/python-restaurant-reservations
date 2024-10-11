@@ -16,6 +16,13 @@ celery = "^5.4.0"
 django-celery-beat = "^2.7.0"
 gevent = "^24.2.1"
 redis = "^5.1.1"
+docker = "^7.1.0"
+compose = "^1.6.2"
+django-countries = "^7.6.1"
+django-phonenumbers = "^1.0.1"
+django-cors-headers = "^4.4.0"
+flake8 = "^7.1.1"
+flake8-html = "^0.4.3"
 
 
 [build-system]
